@@ -1,4 +1,6 @@
 import sys
+import datetime
+import requests
 
 """
 검색에 필요한 옵션
@@ -46,8 +48,13 @@ def ReadOptionSecond():
 
 def InputDate():
     f = sys.stdin
-    print('날짜 입력(예:2020-01-01 13:10:00) : ', end='')
-    optionDate, optionTime = f.readline().strip().split()   
+    while (True):
+        print('날짜 입력(예:2020-01-17 13:10) : ', end='')
+        optionDate, optionTime = f.readline().strip().split()
+        if (datetime.datetime.strptime(optionDate,'%Y-%m-%d') < datetime.datetime.strptime('2020-01-17','%Y-%m-%d')):
+            print('2020-01-17 이전으로 조회할 수 없습니다')
+        else:
+            break
     return optionDate, optionTime 
 
 def InputIssueLevel():
@@ -84,11 +91,60 @@ def Inputage():
     f = sys.stdin
     print('나이대(10, 20, 30, 40, 50, all) : ', end='')
     age = f.readline().strip()
+    if (age != 'all'):
+        age = age + 's'
     return age
 
 def RequestData(optionDate, optionTime, optionIssue, optionEvent, optionCurrent, optionEnter, optionSports, age):
-    # 준비중 (request 영역)
-    print('준비중인 기능')
+    params = { 
+        'datetime': optionDate + "T" + optionTime + ':00',
+        'groupingLevel': optionIssue,
+        'marketing': int(optionEvent) - 2,
+        'news': int(optionCurrent) - 2,
+        'entertainment': int(optionEnter) - 2,
+        'sports': int(optionSports) - 2,
+        'age': age
+    }
+
+    headers = {
+        'referer': 'https://datalab.naver.com/keyword/realtimeList.naver',
+        'user-agent': 'chrome'
+    }
+
+    url = 'https://datalab.naver.com/keyword/realtimeList.naver'
+    res = requests.get(url,params=params,headers=headers)
+    PrintResult(res.text)  
+
+def SplitRankData(requestsText, rank):
+    splitdata = requestsText.split('<span class=\"item_num\">' + str(rank) + '</span>')[1]
+    splitdata = splitdata.split('<span class=\"item_title\">')[1]
+    splitdata = splitdata.split('</span>')[0]
+    return splitdata
+
+def PrintResult(requestsText):
+    requestsText = requestsText.split('<div class=\"ranking_box\">')[1]
+    print('────────────────────────────────────────────────────────────────────────')
+    for i in range(1, 21):
+        print(str(i) + '. ' + SplitRankData(requestsText,i))
+    print('────────────────────────────────────────────────────────────────────────')
+    AfterOption()
+
+def AfterOption():
+    f = sys.stdin
+    while (True):
+        print('1. 네이버에서 검색하기\n2. 처음으로 돌아가기\n입력 : ',end='')
+        selectNo = f.readline().strip()
+        if (selectNo == '1'):
+            OpenBrowser()
+            break
+        elif (selectNo == '2'):
+            break
+        else:
+            print('존재하지 않는 선택지입니다.\n')
+
+def OpenBrowser():
+    # 준비중
+    print('준비중 ...')
 
 def main():
     ReadOption()
