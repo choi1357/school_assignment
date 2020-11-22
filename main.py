@@ -1,6 +1,7 @@
 import sys
 import datetime
 import requests
+import webbrowser
 
 """
 검색에 필요한 옵션
@@ -19,7 +20,7 @@ def ReadOption():
     f = sys.stdin
     while (True):
         print('┌────────────────────────┐\n│Naver 급상승 검색어 조회│\n└────────────────────────┘')
-        print('1. 기본값으로 조회하기(옵션:기본, 나이:전체)\n2. 옵션을 선택하여 조화하기\n3. 종료')
+        print('1. 기본값으로 조회하기(옵션:기본, 나이:전체)\n2. 옵션을 선택하여 조회하기\n3. 종료')
         print('입력 : ', end='')
     
         selectNo = f.readline().strip()
@@ -122,29 +123,50 @@ def SplitRankData(requestsText, rank):
     return splitdata
 
 def PrintResult(requestsText):
+    rankdata = {}
     requestsText = requestsText.split('<div class=\"ranking_box\">')[1]
     print('────────────────────────────────────────────────────────────────────────')
     for i in range(1, 21):
-        print(str(i) + '. ' + SplitRankData(requestsText,i))
+        rankdata[i] = SplitRankData(requestsText,i)
+        if (rankdata[i] != '-'):
+            print(str(i) + '. ' + rankdata[i])
     print('────────────────────────────────────────────────────────────────────────')
-    AfterOption()
+    AfterOption(rankdata)
 
-def AfterOption():
+def AfterOption(rankdata):
     f = sys.stdin
     while (True):
         print('1. 네이버에서 검색하기\n2. 처음으로 돌아가기\n입력 : ',end='')
         selectNo = f.readline().strip()
         if (selectNo == '1'):
-            OpenBrowser()
+            Search(rankdata)
             break
         elif (selectNo == '2'):
             break
         else:
             print('존재하지 않는 선택지입니다.\n')
 
-def OpenBrowser():
-    # 준비중
-    print('준비중 ...')
+def Search(rankdata):
+    f = sys.stdin
+    while (True):
+        print('검색할 순위(0 : 처음으로 돌아가기) : ',end='')
+        rank = f.readline().strip()
+
+        if (rank.isdecimal()):
+            if (rank == '0'):
+                break
+            OpenBrowser(int(rank), rankdata)
+        else:
+            print('존재하지 않는 순위입니다. 0이상의 숫자만 입력해주세요.\n')
+
+def OpenBrowser(rank, rankdata):
+    if (rank > 0 and rank < 21):
+        if (rankdata[rank] != '-'):
+            webbrowser.open('https://search.naver.com/search.naver?sm=tab_hty.top&where=nexearch&query=' + rankdata[rank])
+        else:
+            print('해당 순위에 검색어가 존재하지 않습니다.\n')
+    else:
+        print('존재하지 않는 순위입니다.(입력 가능 : 1 ~ 20)\n')
 
 def main():
     ReadOption()
