@@ -50,48 +50,107 @@ def ReadOptionSecond():
 def InputDate():
     f = sys.stdin
     while (True):
-        print('날짜 입력(예:2020-01-17 13:10) : ', end='')
-        optionDate, optionTime = f.readline().strip().split()
-        if (datetime.datetime.strptime(optionDate,'%Y-%m-%d') < datetime.datetime.strptime('2020-01-17','%Y-%m-%d')):
-            print('2020-01-17 이전으로 조회할 수 없습니다')
-        else:
-            break
+        try:
+            print('날짜 입력(예:2020-01-17 00:00) : ', end='')
+            optionDate, optionTime = f.readline().strip().split()
+            if (datetime.datetime.strptime(optionDate,'%Y-%m-%d') < datetime.datetime.strptime('2020-01-17','%Y-%m-%d')):
+                print('2020-01-17 이전으로 조회할 수 없습니다\n')
+            else:
+                optionFullDate = optionDate + ' ' + optionTime
+                if (datetime.datetime.strptime(optionFullDate,'%Y-%m-%d %H:%M') > datetime.datetime.strptime(datetime.datetime.today().strftime('%Y-%m-%d %H:%M'),'%Y-%m-%d %H:%M')):
+                    print('미래의 시간은 조회할 수 없습니다.\n')
+                else:
+                    break
+        except ValueError:
+            print('날짜 형식이 올바르지 않습니다.\n')
+
     return optionDate, optionTime 
 
 def InputIssueLevel():
     f = sys.stdin
-    print('이슈별 묶어보기 Level(0~4) : ', end='')
-    optionIssue = f.readline().strip()
+    while (True):
+        print('이슈별 묶어보기 Level(0~4) : ', end='')
+        optionIssue = f.readline().strip()
+        if (optionIssue.isdecimal()):
+            if (int(optionIssue) >= 0 and int(optionIssue) <= 4):
+                break
+            else:
+                print('0 ~ 4만 입력할 수 있습니다.\n')
+        else:
+            print('0 ~ 4만 입력할 수 있습니다.\n')
+        
     return optionIssue
 
 def InputEventLevel():
     f = sys.stdin
-    print('이벤트·할인 Level(0~4) : ', end='')
-    optionEvent = f.readline().strip()
+    while (True):
+        print('이벤트·할인 Level(0~4) : ', end='')
+        optionEvent = f.readline().strip()
+        if (optionEvent.isdecimal()):
+            if (int(optionEvent) >= 0 and int(optionEvent) <= 4):
+                break
+            else:
+                print('0 ~ 4만 입력할 수 있습니다.\n')
+        else:
+            print('0 ~ 4만 입력할 수 있습니다.\n')        
+
     return optionEvent
 
 def InputCurrentLevel():
     f = sys.stdin
-    print('시사 Level(0~4) : ', end='')
-    optionCurrent = f.readline().strip()
+    while (True):
+        print('시사 Level(0~4) : ', end='')
+        optionCurrent = f.readline().strip()
+        if (optionCurrent.isdecimal()):
+            if (int(optionCurrent) >= 0 and int(optionCurrent) <= 4):
+                break
+            else:
+                print('0 ~ 4만 입력할 수 있습니다.\n')
+        else:
+            print('0 ~ 4만 입력할 수 있습니다.\n')        
+        
     return optionCurrent
 
 def InputEnterLevel():
     f = sys.stdin
-    print('엔터 Level(0~4) : ', end='')
-    optionEnter = f.readline().strip()
+    while (True):
+        print('엔터 Level(0~4) : ', end='')
+        optionEnter = f.readline().strip()
+        if (optionEnter.isdecimal()):
+            if (int(optionEnter) >= 0 and int(optionEnter) <= 4):
+                break
+            else:
+                print('0 ~ 4만 입력할 수 있습니다.\n')
+        else:
+            print('0 ~ 4만 입력할 수 있습니다.\n')        
+                
     return optionEnter
 
 def InputSportsLevel():
     f = sys.stdin
-    print('스포츠 Level(0~4) : ', end='')
-    optionSports = f.readline().strip()
+    while(True):
+        print('스포츠 Level(0~4) : ', end='')
+        optionSports = f.readline().strip()
+        if (optionSports.isdecimal()):
+            if (int(optionSports) >= 0 and int(optionSports) <= 4):
+                break
+            else:
+                print('0 ~ 4만 입력할 수 있습니다.\n')
+        else:
+            print('0 ~ 4만 입력할 수 있습니다.\n')        
+                       
     return optionSports
 
 def Inputage():
     f = sys.stdin
-    print('나이대(10, 20, 30, 40, 50, all) : ', end='')
-    age = f.readline().strip()
+    while(True):
+        print('나이대(10, 20, 30, 40, 50, all) : ', end='')
+        age = f.readline().strip()
+        if (age == '10' or age == '20' or age == '30' or age == '40' or age =='50' or age == 'all'):
+            break
+        else:
+            print('10, 20, 30, 40, 50, all 중에서 입력해야 합니다.\n')
+
     if (age != 'all'):
         age = age + 's'
     return age
@@ -113,8 +172,15 @@ def RequestData(optionDate, optionTime, optionIssue, optionEvent, optionCurrent,
     }
 
     url = 'https://datalab.naver.com/keyword/realtimeList.naver'
-    res = requests.get(url,params=params,headers=headers)
-    PrintResult(res.text)  
+
+    try:
+        res = requests.get(url,params=params,headers=headers)
+        if (res.status_code == 200):
+            PrintResult(res.text) 
+        else:
+            print('웹에서 응답하지 않습니다.(status_code : ' + str(res.status_code))
+    except requests.ConnectionError:
+        print('네트워크가 연결되어 있지 않습니다.')
 
 def SplitRankData(requestsText, rank):
     splitdata = requestsText.split('<span class=\"item_num\">' + str(rank) + '</span>')[1]
@@ -124,14 +190,17 @@ def SplitRankData(requestsText, rank):
 
 def PrintResult(requestsText):
     rankdata = {}
-    requestsText = requestsText.split('<div class=\"ranking_box\">')[1]
-    print('────────────────────────────────────────────────────────────────────────')
-    for i in range(1, 21):
-        rankdata[i] = SplitRankData(requestsText,i)
-        if (rankdata[i] != '-'):
-            print(str(i) + '. ' + rankdata[i])
-    print('────────────────────────────────────────────────────────────────────────')
-    AfterOption(rankdata)
+    try:
+        requestsText = requestsText.split('<div class=\"ranking_box\">')[1]
+        print('────────────────────────────────────────────────────────────────────────')
+        for i in range(1, 21):
+            rankdata[i] = SplitRankData(requestsText,i)
+            if (rankdata[i] != '-'):
+                print(str(i) + '. ' + rankdata[i])
+        print('────────────────────────────────────────────────────────────────────────')
+        AfterOption(rankdata)
+    except IndexError:
+        print('데이터를 불러올 수 없습니다. 날짜를 확인해주세요.')
 
 def AfterOption(rankdata):
     f = sys.stdin
